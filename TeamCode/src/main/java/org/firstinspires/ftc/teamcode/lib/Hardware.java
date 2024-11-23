@@ -63,8 +63,6 @@ public class Hardware {
         //drive
         fL.setInverted(true);
         rL.setInverted(true);
-        fR.setInverted(true);
-        rR.setInverted(true);
         armRotate.setInverted(true);
         //claw.turnToAngle(0);
         //claw.setInverted(true);
