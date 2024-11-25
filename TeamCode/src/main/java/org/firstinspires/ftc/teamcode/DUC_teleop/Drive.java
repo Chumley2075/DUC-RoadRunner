@@ -127,7 +127,7 @@ public class Drive extends LinearOpMode {
                 robot.claw.set(1);
             } else if (gamepad1.b) {
                 robot.claw.set(-1);
-            }else if(){
+            }else{
                 robot.claw.stopMotor();
             }
 
@@ -153,7 +153,7 @@ public class Drive extends LinearOpMode {
             if(controller2.wasJustReleased(GamepadKeys.Button.A)){
                intakeMacro = !intakeMacro;
             }
-           
+
             //basically:
             /*
             calculate the extra power needed to lift up the robot with a claw by
