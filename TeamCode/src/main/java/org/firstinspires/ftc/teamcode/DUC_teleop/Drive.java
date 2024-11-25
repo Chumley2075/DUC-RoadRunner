@@ -8,12 +8,15 @@ import static org.firstinspires.ftc.teamcode.lib.Hardware.spoolLowerBounds;
 import static org.firstinspires.ftc.teamcode.lib.Hardware.spoolUpperBounds;
 
 
+import android.graphics.Color;
 import android.os.SystemClock;
+import android.util.Size;
 
 import androidx.core.math.MathUtils;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
+import com.arcrobotics.ftclib.command.button.GamepadButton;
 import com.arcrobotics.ftclib.drivebase.MecanumDrive;
 import com.arcrobotics.ftclib.gamepad.ButtonReader;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
@@ -21,10 +24,16 @@ import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.arcrobotics.ftclib.hardware.motors.Motor;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.teamcode.lib.Hardware;
+import org.firstinspires.ftc.vision.VisionPortal;
+import org.firstinspires.ftc.vision.opencv.ImageRegion;
+import org.firstinspires.ftc.vision.opencv.PredominantColorProcessor;
+
 @TeleOp(name="Teleop1", group="Robot")
 @Config
 public class Drive extends LinearOpMode {
@@ -38,9 +47,11 @@ public class Drive extends LinearOpMode {
     double precisionCoefficient = 1;
     double rightStickYValue;
     double armPower = 0;
-    long lastTime = 0;
+    boolean intakeMacro = false;
     double intervalMS = 100;
-//ButtonReader r1 = new ButtonReader(controller1, GamepadKeys.Button.RIGHT_BUMPER);
+    ElapsedTime timerArmRotate = new ElapsedTime();
+    ElapsedTime macro1 = new ElapsedTime();
+
 
     @Override
     public void runOpMode() {
@@ -59,24 +70,38 @@ public class Drive extends LinearOpMode {
         robot.spool.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
         robot.spool.resetEncoder();
         robot.armRotate.resetEncoder();
+
         FtcDashboard dashboard = FtcDashboard.getInstance();
         Telemetry dashboardTelemetry = dashboard.getTelemetry();
         GamepadEx controller1 = new GamepadEx(gamepad1);
-       //
-        ButtonReader reader = new ButtonReader(controller1, GamepadKeys.Button.RIGHT_BUMPER);
+        GamepadEx controller2 = new GamepadEx(gamepad2);
+        //Color sensor stuff
+        PredominantColorProcessor colorSensor = new PredominantColorProcessor.Builder()
+                .setRoi(ImageRegion.asUnityCenterCoordinates(-0.1, 0.1, 0.1, -0.1))
+                .setSwatches(
+                        PredominantColorProcessor.Swatch.RED,
+                        PredominantColorProcessor.Swatch.BLUE,
+                        PredominantColorProcessor.Swatch.YELLOW)
+                .setSwatches()
+                .build();
+        VisionPortal portal = new VisionPortal.Builder()
+                .addProcessor(colorSensor)
+                .setCameraResolution(new Size(640, 360))
+                .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"))
+                .build();
+        PredominantColorProcessor.Result result = colorSensor.getAnalysis();
+
+
         waitForStart();
+        timerArmRotate.reset();
         while (opModeIsActive()) {
             robotOrientation = robot.imu.getRobotYawPitchRollAngles();
-            long currentTime = System.currentTimeMillis();
             if (DEBUG) {
-             //   telemetry.addData("Yaw", robotOrientation.getYaw());
-               // telemetry.addData("Pitch", robotOrientation.getPitch());
-               // telemetry.addData("Roll", robotOrientation.getRoll());
-              //  telemetry.addData("Claw power", robot.claw.get());
+
                 telemetry.addData("Spool encoders: ", robot.spool.getCurrentPosition());
                 telemetry.addData("Arm tick Pos: ", robot.armRotate.getCurrentPosition());
-             //   telemetry.addData("Arm coefficient: ", positionCoefficient);
-             //   telemetry.addData("BooleanMethod: ",encoderMethod);
+                telemetry.addData("Best Match Color Swatch:", result.closestSwatch);
+                telemetry.addLine(String.format("R %3d, G %3d, B %3d", Color.red(result.rgb), Color.green(result.rgb), Color.blue(result.rgb)));
                 telemetry.addData("TARGET: ", armTickPosition);
                 telemetry.addData("Arm power target", Hardware.calculateArmPower(armAngles.get(robot.armRotate.getCurrentPosition()), clawWeightCoefficient));
                 telemetry.addData("Arm power", robot.armRotate.get());
@@ -85,22 +110,12 @@ public class Drive extends LinearOpMode {
 
                 dashboardTelemetry.addData("Spool encoders: ", robot.spool.getCurrentPosition());
                 dashboardTelemetry.addData("Arm tick Pos: ", robot.armRotate.getCurrentPosition());
-             //   dashboardTelemetry.addData("Arm coefficient: ", positionCoefficient);
-               // dashboardTelemetry.addData("BooleanMethod: ",encoderMethod);
-                dashboardTelemetry.addData("TARGET: ", armTickPosition);
+                dashboardTelemetry.addData("TARGET Ticks: ", armTickPosition);
                 dashboardTelemetry.addData("Arm power target", Hardware.calculateArmPower(armAngles.get(robot.armRotate.getCurrentPosition()), clawWeightCoefficient));
                 dashboardTelemetry.addData("Arm power", robot.armRotate.get());
-
-                // telemetry.addData("Arm angle", armAngles.get(robot.armRotate.getCurrentPosition()));
-                //telemetry.addData("Arm power", Hardware.calculateArmPower(armAngles.get(robot.armRotate.getCurrentPosition()), clawWeightCoefficient) + controller1.getRightY());
+                dashboardTelemetry.addData("Best Match Color Swatch:", result.closestSwatch);
+                dashboardTelemetry.addLine(String.format("R %3d, G %3d, B %3d", Color.red(result.rgb), Color.green(result.rgb), Color.blue(result.rgb)));
             }
-            /*
-            if (gamepad1.right_trigger > 0) {
-                precisionCoefficient = 0.5;
-            } else {
-                precisionCoefficient = 1;
-            }
-*/
             mecanum.driveRobotCentric(
                     controller1.getLeftX() * precisionCoefficient,
                     controller1.getLeftY() * precisionCoefficient,
@@ -112,7 +127,7 @@ public class Drive extends LinearOpMode {
                 robot.claw.set(1);
             } else if (gamepad1.b) {
                 robot.claw.set(-1);
-            }else{
+            }else if(){
                 robot.claw.stopMotor();
             }
 
@@ -125,16 +140,20 @@ public class Drive extends LinearOpMode {
             }
 
             rightStickYValue = Math.cbrt(-gamepad1.right_stick_y);
-            if (currentTime - lastTime >= intervalMS) {
-                // Add the right stick Y value to the variable
-                rightStickYValue += gamepad1.right_stick_y;
-
-                // Update the last update time
-                lastTime = currentTime;
+            if(rightStickYValue>0 || rightStickYValue<0){
+                if (timerArmRotate.milliseconds() >= intervalMS) {
+                    armTickPosition += (int) rightStickYValue;
+                    timerArmRotate.reset();
+                }
+            }else if(gamepad1.a){
+                armTickPosition=0;
             }
-
             keepPosition();
 
+            if(controller2.wasJustReleased(GamepadKeys.Button.A)){
+               intakeMacro = !intakeMacro;
+            }
+           
             //basically:
             /*
             calculate the extra power needed to lift up the robot with a claw by
@@ -148,11 +167,14 @@ public class Drive extends LinearOpMode {
             dashboardTelemetry.update();
         }
     }
+    public void beginIntake(){
+
+    }
     public void keepPosition(){
         robot.armRotate.setRunMode(Motor.RunMode.PositionControl);
         robot.armRotate.setPositionCoefficient(positionCoefficient);
         robot.armRotate.setTargetPosition(armTickPosition);
-        robot.armRotate.set(.5);
+        robot.armRotate.set(.75);
         robot.armRotate.setPositionTolerance(10);
     }
 }
