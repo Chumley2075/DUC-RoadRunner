@@ -27,6 +27,7 @@ import android.util.Size;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.vision.VisionPortal;
@@ -88,9 +89,8 @@ public class colorWebcam extends LinearOpMode
                 .setSwatches(
                         PredominantColorProcessor.Swatch.RED,
                         PredominantColorProcessor.Swatch.BLUE,
-                        PredominantColorProcessor.Swatch.YELLOW,
-                        PredominantColorProcessor.Swatch.BLACK,
-                        PredominantColorProcessor.Swatch.WHITE)
+                        PredominantColorProcessor.Swatch.YELLOW)
+                .setSwatches()
                 .build();
 
         /*
@@ -107,7 +107,7 @@ public class colorWebcam extends LinearOpMode
          */
         VisionPortal portal = new VisionPortal.Builder()
                 .addProcessor(colorSensor)
-                .setCameraResolution(new Size(320, 240))
+                .setCameraResolution(new Size(640, 360))
                 .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"))
                 .build();
 
