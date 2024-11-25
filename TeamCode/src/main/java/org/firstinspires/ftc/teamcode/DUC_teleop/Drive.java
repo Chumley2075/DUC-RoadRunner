@@ -8,6 +8,10 @@ import static org.firstinspires.ftc.teamcode.lib.Hardware.spoolLowerBounds;
 import static org.firstinspires.ftc.teamcode.lib.Hardware.spoolUpperBounds;
 
 
+import android.os.SystemClock;
+
+import androidx.core.math.MathUtils;
+
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.drivebase.MecanumDrive;
@@ -30,10 +34,12 @@ public class Drive extends LinearOpMode {
     public static int armTickUpper = 2000;
     public static int armTickLower = 0;
     public static int armTickPosition = 200;
-    boolean encoderMethod = false;
     public static double positionCoefficient=.01;
     double precisionCoefficient = 1;
+    double rightStickYValue;
     double armPower = 0;
+    long lastTime = 0;
+    double intervalMS = 100;
 //ButtonReader r1 = new ButtonReader(controller1, GamepadKeys.Button.RIGHT_BUMPER);
 
     @Override
@@ -61,6 +67,7 @@ public class Drive extends LinearOpMode {
         waitForStart();
         while (opModeIsActive()) {
             robotOrientation = robot.imu.getRobotYawPitchRollAngles();
+            long currentTime = System.currentTimeMillis();
             if (DEBUG) {
              //   telemetry.addData("Yaw", robotOrientation.getYaw());
                // telemetry.addData("Pitch", robotOrientation.getPitch());
@@ -68,8 +75,8 @@ public class Drive extends LinearOpMode {
               //  telemetry.addData("Claw power", robot.claw.get());
                 telemetry.addData("Spool encoders: ", robot.spool.getCurrentPosition());
                 telemetry.addData("Arm tick Pos: ", robot.armRotate.getCurrentPosition());
-                telemetry.addData("Arm coefficient: ", positionCoefficient);
-                telemetry.addData("BooleanMethod: ",encoderMethod);
+             //   telemetry.addData("Arm coefficient: ", positionCoefficient);
+             //   telemetry.addData("BooleanMethod: ",encoderMethod);
                 telemetry.addData("TARGET: ", armTickPosition);
                 telemetry.addData("Arm power target", Hardware.calculateArmPower(armAngles.get(robot.armRotate.getCurrentPosition()), clawWeightCoefficient));
                 telemetry.addData("Arm power", robot.armRotate.get());
@@ -78,8 +85,8 @@ public class Drive extends LinearOpMode {
 
                 dashboardTelemetry.addData("Spool encoders: ", robot.spool.getCurrentPosition());
                 dashboardTelemetry.addData("Arm tick Pos: ", robot.armRotate.getCurrentPosition());
-                dashboardTelemetry.addData("Arm coefficient: ", positionCoefficient);
-                dashboardTelemetry.addData("BooleanMethod: ",encoderMethod);
+             //   dashboardTelemetry.addData("Arm coefficient: ", positionCoefficient);
+               // dashboardTelemetry.addData("BooleanMethod: ",encoderMethod);
                 dashboardTelemetry.addData("TARGET: ", armTickPosition);
                 dashboardTelemetry.addData("Arm power target", Hardware.calculateArmPower(armAngles.get(robot.armRotate.getCurrentPosition()), clawWeightCoefficient));
                 dashboardTelemetry.addData("Arm power", robot.armRotate.get());
@@ -87,12 +94,13 @@ public class Drive extends LinearOpMode {
                 // telemetry.addData("Arm angle", armAngles.get(robot.armRotate.getCurrentPosition()));
                 //telemetry.addData("Arm power", Hardware.calculateArmPower(armAngles.get(robot.armRotate.getCurrentPosition()), clawWeightCoefficient) + controller1.getRightY());
             }
+            /*
             if (gamepad1.right_trigger > 0) {
                 precisionCoefficient = 0.5;
             } else {
                 precisionCoefficient = 1;
             }
-
+*/
             mecanum.driveRobotCentric(
                     controller1.getLeftX() * precisionCoefficient,
                     controller1.getLeftY() * precisionCoefficient,
@@ -116,41 +124,16 @@ public class Drive extends LinearOpMode {
                 robot.spool.set(0);
             }
 
+            rightStickYValue = Math.cbrt(-gamepad1.right_stick_y);
+            if (currentTime - lastTime >= intervalMS) {
+                // Add the right stick Y value to the variable
+                rightStickYValue += gamepad1.right_stick_y;
 
-            //START OF RYAN CODE
-            if(!encoderMethod){
-                robot.armRotate.setRunMode(Motor.RunMode.RawPower);
-                robot.armRotate.set(-gamepad1.right_stick_y);
-               // armPower = Hardware.calculateArmPower(armAngles.get(robot.armRotate.getCurrentPosition()), clawWeightCoefficient);
-                //robot.armRotate.set(armPower + Math.cbrt(controller1.getRightY()));
-
-            }else{
-                if(gamepad1.a){
-                  armTickPosition =armTickUpper;
-                }else if(gamepad1.y){
-                    armTickPosition = armTickLower;
-                }
+                // Update the last update time
+                lastTime = currentTime;
             }
-            reader.readValue();
-            if(reader.wasJustReleased()){
-                encoderMethod = !encoderMethod;
-            }
-            if(encoderMethod){
-                keepPosition();
-            }
-            // END OF RYAN CODE
 
-
-
-            /*if (gamepad1.a) {
-                robot.armRotate.setTargetPosition(armPosition);
-                robot.armRotate.set(0);
-                robot.armRotate.setPositionTolerance(13.6); //error
-                while (!robot.armRotate.atTargetPosition()) {
-                    robot.armRotate.set(0.5);
-                }
-                robot.armRotate.stopMotor(); // stop the motor
-            }*/
+            keepPosition();
 
             //basically:
             /*
