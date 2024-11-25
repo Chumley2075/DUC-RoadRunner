@@ -123,6 +123,7 @@ public class Drive extends LinearOpMode {
                     true
             );
 
+
             if (gamepad1.x) {
                 robot.claw.set(1);
             } else if (gamepad1.b) {
@@ -130,6 +131,7 @@ public class Drive extends LinearOpMode {
             }else{
                 robot.claw.stopMotor();
             }
+
 
             if (gamepad1.dpad_up && (robot.spool.getCurrentPosition() < spoolUpperBounds && !gamepad1.right_bumper)) {
                 robot.spool.set(1);
@@ -153,6 +155,20 @@ public class Drive extends LinearOpMode {
             if(controller2.wasJustReleased(GamepadKeys.Button.A)){
                intakeMacro = !intakeMacro;
             }
+            /*
+            if(!intakeMacro){
+                if (gamepad1.x) {
+                    robot.claw.set(1);
+                } else if (gamepad1.b) {
+                    robot.claw.set(-1);
+                }else{
+                    robot.claw.stopMotor();
+                }
+            }else{
+                beginIntake();
+            }
+
+            */
 
             //basically:
             /*
