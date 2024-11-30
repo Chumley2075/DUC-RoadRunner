@@ -42,7 +42,7 @@ public class Drive extends LinearOpMode {
     YawPitchRollAngles robotOrientation;
     public static int armTickUpper = 2000;
     public static int armTickLower = 0;
-    public static int armTickPosition = 200;
+    public static int armTickPosition = 0;
     public static double positionCoefficient=.01;
     double precisionCoefficient = 1;
     double rightStickYValue;
@@ -116,26 +116,33 @@ public class Drive extends LinearOpMode {
                 dashboardTelemetry.addData("Best Match Color Swatch:", result.closestSwatch);
                 dashboardTelemetry.addLine(String.format("R %3d, G %3d, B %3d", Color.red(result.rgb), Color.green(result.rgb), Color.blue(result.rgb)));
             }
-            mecanum.driveRobotCentric(
+
+            robot.robotOrientation = imu.getRobotYawPitchRollAngles()
+            mecanum.driveFieldCentric(
                     controller1.getLeftX() * precisionCoefficient,
                     controller1.getLeftY() * precisionCoefficient,
                     controller1.getRightX() * precisionCoefficient,
-                    true
+                    robot.robotOrientation.getYaw(AngleUnit.DEGREES)
             );
 
+            if (gamepad1.right_trigger > 1) {
+                precisionCoefficient = 0.5;
+            } else {
+                precisionCoefficient = 1;
+            }
 
-            if (gamepad1.x) {
+            if (gamepad2.x) {
                 robot.claw.set(1);
-            } else if (gamepad1.b) {
+            } else if (gamepad2.b) {
                 robot.claw.set(-1);
             }else{
                 robot.claw.stopMotor();
             }
 
 
-            if (gamepad1.dpad_up && (robot.spool.getCurrentPosition() < spoolUpperBounds && !gamepad1.right_bumper)) {
+            if (gamepad2.dpad_up && (robot.spool.getCurrentPosition() < spoolUpperBounds && !gamepad1.right_bumper)) {
                 robot.spool.set(1);
-            } else if (gamepad1.dpad_down && (robot.spool.getCurrentPosition() > spoolLowerBounds && !gamepad1.right_bumper)) {
+            } else if (gamepad2.dpad_down && (robot.spool.getCurrentPosition() > spoolLowerBounds && !gamepad1.right_bumper)) {
                 robot.spool.set(-1);
             } else {
                 robot.spool.set(0);
@@ -148,7 +155,9 @@ public class Drive extends LinearOpMode {
                     timerArmRotate.reset();
                 }
             }else if(gamepad1.a){
-                armTickPosition=0;
+                armTickPosition= 0;
+            }else if (gamepad2.y) {
+                armTickPosition = 1500;
             }
             keepPosition();
 
