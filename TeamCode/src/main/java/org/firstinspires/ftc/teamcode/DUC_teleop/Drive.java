@@ -137,12 +137,12 @@ public class Drive extends LinearOpMode {
             }
 
             if (gamepad2.left_bumper) {
-                robot.claw.set(1);
+                robot.claw.setPosition(1);
             } else if (gamepad2.right_bumper) {
-                robot.claw.set(-1);
-            }else{
+                robot.claw.setPosition(0);
+            }/*else{
                 robot.claw.stopMotor();
-            }
+            }*/
 
 
 
