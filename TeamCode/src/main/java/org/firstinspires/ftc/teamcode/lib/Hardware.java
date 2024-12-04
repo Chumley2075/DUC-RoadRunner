@@ -33,7 +33,7 @@ public class Hardware {
     //imu and YPRA
     public YawPitchRollAngles robotOrientation;
     public IMU imu;
-    public Servo claw;
+    public ServoEx claw;
     private HardwareMap hwMap;
     public static double spoolLowerBounds = 0;
     public static double spoolUpperBounds = 2000;
@@ -52,7 +52,7 @@ public class Hardware {
         armRotate = new Motor(hwMap, "arm");
         spool = new Motor(hwMap, "spool");
         imu = hwMap.get(IMU.class, "imu");
-        claw = new SimpleServo(hwMap, "claw", 0, 10);
+        claw = new SimpleServo(hwMap, "claw", 0, 180);
         //INITIALIZATION
 
         //imu

@@ -80,20 +80,7 @@ public class Drive extends LinearOpMode {
         GamepadEx controller1 = new GamepadEx(gamepad1);
         GamepadEx controller2 = new GamepadEx(gamepad2);
         //Color sensor stuff
-        PredominantColorProcessor colorSensor = new PredominantColorProcessor.Builder()
-                .setRoi(ImageRegion.asUnityCenterCoordinates(-0.1, 0.1, 0.1, -0.1))
-                .setSwatches(
-                        PredominantColorProcessor.Swatch.RED,
-                        PredominantColorProcessor.Swatch.BLUE,
-                        PredominantColorProcessor.Swatch.YELLOW)
-                .setSwatches()
-                .build();
-        VisionPortal portal = new VisionPortal.Builder()
-                .addProcessor(colorSensor)
-                .setCameraResolution(new Size(640, 360))
-                .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"))
-                .build();
-        PredominantColorProcessor.Result result = colorSensor.getAnalysis();
+
 
 
         waitForStart();
@@ -105,7 +92,7 @@ public class Drive extends LinearOpMode {
                 telemetry.addData("Spool encoders: ", robot.spool.getCurrentPosition());
                 telemetry.addData("Arm tick Pos: ", robot.armRotate.getCurrentPosition());
                 telemetry.addData("Yaw:", robot.robotOrientation.getYaw(AngleUnit.DEGREES));
-                telemetry.addLine(String.format("R %3d, G %3d, B %3d", Color.red(result.rgb), Color.green(result.rgb), Color.blue(result.rgb)));
+            //    telemetry.addLine(String.format("R %3d, G %3d, B %3d", Color.red(result.rgb), Color.green(result.rgb), Color.blue(result.rgb)));
                 telemetry.addData("TARGET: ", armTickPosition);
                 telemetry.addData("Right stick y", Math.cbrt(-gamepad2.right_stick_y));
                 telemetry.addData("Gamepad2 x", gamepad2.x);
@@ -117,8 +104,8 @@ public class Drive extends LinearOpMode {
                 dashboardTelemetry.addData("TARGET Ticks: ", armTickPosition);
                 dashboardTelemetry.addData("Arm power target", Hardware.calculateArmPower(armAngles.get(robot.armRotate.getCurrentPosition()), clawWeightCoefficient));
                 dashboardTelemetry.addData("Arm power", robot.armRotate.get());
-                dashboardTelemetry.addData("Best Match Color Swatch:", result.closestSwatch);
-                dashboardTelemetry.addLine(String.format("R %3d, G %3d, B %3d", Color.red(result.rgb), Color.green(result.rgb), Color.blue(result.rgb)));
+             //   dashboardTelemetry.addData("Best Match Color Swatch:", result.closestSwatch);
+           //     dashboardTelemetry.addLine(String.format("R %3d, G %3d, B %3d", Color.red(result.rgb), Color.green(result.rgb), Color.blue(result.rgb)));
             }
 
             robot.robotOrientation = robot.imu.getRobotYawPitchRollAngles();
@@ -147,9 +134,9 @@ public class Drive extends LinearOpMode {
 
 
 
-            if (gamepad2.dpad_up /*&& (robot.spool.getCurrentPosition() < spoolUpperBounds && !gamepad2.right_bumper)*/) {
+            if (gamepad2.dpad_up && ((robot.spool.getCurrentPosition() < spoolUpperBounds) && !gamepad2.b)) {
                 robot.spool.set(1);
-            } else if (gamepad2.dpad_down /*&& (robot.spool.getCurrentPosition() > spoolLowerBounds && !gamepad2.right_bumper)*/) {
+            } else if (gamepad2.dpad_down && ((robot.spool.getCurrentPosition() > spoolLowerBounds) && !gamepad2.b)) {
                 robot.spool.set(-1);
             } else {
                 robot.spool.set(0);
