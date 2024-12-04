@@ -4,6 +4,8 @@ package org.firstinspires.ftc.teamcode.DUC_teleop;
 import static org.firstinspires.ftc.teamcode.Constants.DEBUG;
 import static org.firstinspires.ftc.teamcode.Constants.clawWeightCoefficient;
 import static org.firstinspires.ftc.teamcode.lib.Hardware.armAngles;
+import static org.firstinspires.ftc.teamcode.lib.Hardware.closeClawAngle;
+import static org.firstinspires.ftc.teamcode.lib.Hardware.openClawAngle;
 import static org.firstinspires.ftc.teamcode.lib.Hardware.spoolLowerBounds;
 import static org.firstinspires.ftc.teamcode.lib.Hardware.spoolUpperBounds;
 
@@ -124,9 +126,9 @@ public class Drive extends LinearOpMode {
             }
 
             if (gamepad2.left_bumper) {
-                robot.claw.setPosition(1);
+                robot.claw.turnToAngle(openClawAngle);
             } else if (gamepad2.right_bumper) {
-                robot.claw.setPosition(0);
+                robot.claw.turnToAngle(closeClawAngle);
             }/*else{
                 robot.claw.stopMotor();
             }*/

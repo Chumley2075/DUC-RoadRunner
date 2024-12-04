@@ -38,6 +38,9 @@ public class Hardware {
     public static double spoolLowerBounds = 0;
     public static double spoolUpperBounds = 2000;
     public static InterpLUT armAngles;
+    public static double openClawAngle = 0;
+    public static double closeClawAngle = 90;
+
 
     public void init(HardwareMap hwMap) {
         this.hwMap = hwMap;
@@ -78,7 +81,7 @@ public class Hardware {
         rR.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
 
         //init claw if it was NORMAL.........
-        //claw.turnToAngle(160);
+        claw.turnToAngle(90);
 
         armAngles = new InterpLUT();
         armAngles.add(-10000, -61);
