@@ -36,7 +36,7 @@ public class Hardware {
     public CRServo claw;
     private HardwareMap hwMap;
     public static double spoolLowerBounds = 0;
-    public static double spoolUpperBounds = 1000;
+    public static double spoolUpperBounds = 2000;
     public static InterpLUT armAngles;
 
     public void init(HardwareMap hwMap) {
@@ -52,7 +52,6 @@ public class Hardware {
         armRotate = new Motor(hwMap, "arm");
         spool = new Motor(hwMap, "spool");
         imu = hwMap.get(IMU.class, "imu");
-        //claw = new CRServo(hwMap, "claw");
         claw = new CRServo(hwMap, "claw");
         //INITIALIZATION
 
@@ -63,6 +62,8 @@ public class Hardware {
         //drive
         fL.setInverted(true);
         rL.setInverted(true);
+        fR.setInverted(true);
+        rR.setInverted(true);
         armRotate.setInverted(true);
         //claw.turnToAngle(0);
         //claw.setInverted(true);

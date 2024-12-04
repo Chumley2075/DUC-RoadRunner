@@ -28,6 +28,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.teamcode.lib.Hardware;
 import org.firstinspires.ftc.vision.VisionPortal;
@@ -49,6 +50,7 @@ public class Drive extends LinearOpMode {
     double armPower = 0;
     boolean intakeMacro = false;
     double intervalMS = 100;
+    double heading = 0;
     ElapsedTime timerArmRotate = new ElapsedTime();
     ElapsedTime macro1 = new ElapsedTime();
 
@@ -70,6 +72,8 @@ public class Drive extends LinearOpMode {
         robot.spool.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
         robot.spool.resetEncoder();
         robot.armRotate.resetEncoder();
+
+        heading = robot.robotOrientation.getYaw(AngleUnit.DEGREES);
 
         FtcDashboard dashboard = FtcDashboard.getInstance();
         Telemetry dashboardTelemetry = dashboard.getTelemetry();
@@ -100,11 +104,11 @@ public class Drive extends LinearOpMode {
 
                 telemetry.addData("Spool encoders: ", robot.spool.getCurrentPosition());
                 telemetry.addData("Arm tick Pos: ", robot.armRotate.getCurrentPosition());
-                telemetry.addData("Best Match Color Swatch:", result.closestSwatch);
+                telemetry.addData("Yaw:", robot.robotOrientation.getYaw(AngleUnit.DEGREES));
                 telemetry.addLine(String.format("R %3d, G %3d, B %3d", Color.red(result.rgb), Color.green(result.rgb), Color.blue(result.rgb)));
                 telemetry.addData("TARGET: ", armTickPosition);
-                telemetry.addData("Arm power target", Hardware.calculateArmPower(armAngles.get(robot.armRotate.getCurrentPosition()), clawWeightCoefficient));
-                telemetry.addData("Arm power", robot.armRotate.get());
+                telemetry.addData("Right stick y", Math.cbrt(-gamepad2.right_stick_y));
+                telemetry.addData("Gamepad2 x", gamepad2.x);
 
 
 
@@ -117,7 +121,8 @@ public class Drive extends LinearOpMode {
                 dashboardTelemetry.addLine(String.format("R %3d, G %3d, B %3d", Color.red(result.rgb), Color.green(result.rgb), Color.blue(result.rgb)));
             }
 
-            robot.robotOrientation = imu.getRobotYawPitchRollAngles()
+            robot.robotOrientation = robot.imu.getRobotYawPitchRollAngles();
+            if (gamepad1.left_bumper) {robot.imu.resetYaw();}
             mecanum.driveFieldCentric(
                     controller1.getLeftX() * precisionCoefficient,
                     controller1.getLeftY() * precisionCoefficient,
@@ -125,45 +130,44 @@ public class Drive extends LinearOpMode {
                     robot.robotOrientation.getYaw(AngleUnit.DEGREES)
             );
 
-            if (gamepad1.right_trigger > 1) {
-                precisionCoefficient = 0.5;
+            if (gamepad1.right_trigger > 0) {
+                precisionCoefficient = 0.25;
             } else {
                 precisionCoefficient = 1;
             }
 
-            if (gamepad2.x) {
+            if (gamepad2.left_bumper) {
                 robot.claw.set(1);
-            } else if (gamepad2.b) {
+            } else if (gamepad2.right_bumper) {
                 robot.claw.set(-1);
             }else{
                 robot.claw.stopMotor();
             }
 
 
-            if (gamepad2.dpad_up && (robot.spool.getCurrentPosition() < spoolUpperBounds && !gamepad1.right_bumper)) {
+
+
+            if (gamepad2.dpad_up /*&& (robot.spool.getCurrentPosition() < spoolUpperBounds && !gamepad2.right_bumper)*/) {
                 robot.spool.set(1);
-            } else if (gamepad2.dpad_down && (robot.spool.getCurrentPosition() > spoolLowerBounds && !gamepad1.right_bumper)) {
+            } else if (gamepad2.dpad_down /*&& (robot.spool.getCurrentPosition() > spoolLowerBounds && !gamepad2.right_bumper)*/) {
                 robot.spool.set(-1);
             } else {
                 robot.spool.set(0);
             }
 
-            rightStickYValue = Math.cbrt(-gamepad1.right_stick_y);
+            rightStickYValue = Math.cbrt(-gamepad2.right_stick_y);
             if(rightStickYValue>0 || rightStickYValue<0){
                 if (timerArmRotate.milliseconds() >= intervalMS) {
-                    armTickPosition += (int) rightStickYValue;
+                    armTickPosition += (int) rightStickYValue * (100 );
                     timerArmRotate.reset();
                 }
-            }else if(gamepad1.a){
-                armTickPosition= 0;
-            }else if (gamepad2.y) {
-                armTickPosition = 1500;
+            } else if (gamepad2.a) {
+                armTickPosition= 50;
+            } else if (gamepad2.y) {
+                armTickPosition = 2500;
             }
             keepPosition();
 
-            if(controller2.wasJustReleased(GamepadKeys.Button.A)){
-               intakeMacro = !intakeMacro;
-            }
             /*
             if(!intakeMacro){
                 if (gamepad1.x) {
