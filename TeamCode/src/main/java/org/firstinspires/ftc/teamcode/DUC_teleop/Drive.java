@@ -53,6 +53,7 @@ public class Drive extends LinearOpMode {
     boolean intakeMacro = false;
     double intervalMS = 100;
     double heading = 0;
+    boolean clawOpen = false;
     ElapsedTime timerArmRotate = new ElapsedTime();
     ElapsedTime macro1 = new ElapsedTime();
 
@@ -97,7 +98,7 @@ public class Drive extends LinearOpMode {
             //    telemetry.addLine(String.format("R %3d, G %3d, B %3d", Color.red(result.rgb), Color.green(result.rgb), Color.blue(result.rgb)));
                 telemetry.addData("TARGET: ", armTickPosition);
                 telemetry.addData("Right stick y", Math.cbrt(-gamepad2.right_stick_y));
-                telemetry.addData("Gamepad2 x", gamepad2.x);
+                telemetry.addData("claw open", clawOpen);
 
 
 
@@ -125,14 +126,14 @@ public class Drive extends LinearOpMode {
                 precisionCoefficient = 1;
             }
 
-            if (gamepad2.left_bumper) {
+            if (controller2.wasJustReleased(GamepadKeys.Button.X)) {
+                clawOpen = !clawOpen;
+            }
+            if (clawOpen) {
                 robot.claw.turnToAngle(openClawAngle);
-            } else if (gamepad2.right_bumper) {
+            } else {
                 robot.claw.turnToAngle(closeClawAngle);
-            }/*else{
-                robot.claw.stopMotor();
-            }*/
-
+            }
 
 
 
