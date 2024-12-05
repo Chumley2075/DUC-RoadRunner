@@ -82,6 +82,7 @@ public class Drive extends LinearOpMode {
         Telemetry dashboardTelemetry = dashboard.getTelemetry();
         GamepadEx controller1 = new GamepadEx(gamepad1);
         GamepadEx controller2 = new GamepadEx(gamepad2);
+        ButtonReader reader = new ButtonReader(controller2, GamepadKeys.Button.X);
         //Color sensor stuff
 
 
@@ -125,8 +126,8 @@ public class Drive extends LinearOpMode {
             } else {
                 precisionCoefficient = 1;
             }
-
-            if (controller2.wasJustReleased(GamepadKeys.Button.X)) {
+            reader.readValue();
+            if (reader.wasJustReleased()) {
                 clawOpen = !clawOpen;
             }
             if (clawOpen) {
