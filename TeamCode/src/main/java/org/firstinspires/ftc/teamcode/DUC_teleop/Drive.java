@@ -104,7 +104,7 @@ public class Drive extends LinearOpMode {
                 dashboardTelemetry.addData("Spool encoders: ", robot.spool.getCurrentPosition());
                 dashboardTelemetry.addData("Arm tick Pos: ", robot.armRotate.getCurrentPosition());
                 dashboardTelemetry.addData("TARGET Ticks: ", armTickPosition);
-                dashboardTelemetry.addData("Arm power target", Hardware.calculateArmPower(armAngles.get(robot.armRotate.getCurrentPosition()), clawWeightCoefficient));
+              //  dashboardTelemetry.addData("Arm power target", Hardware.calculateArmPower(armAngles.get(robot.armRotate.getCurrentPosition()), clawWeightCoefficient));
                 dashboardTelemetry.addData("Arm power", robot.armRotate.get());
              //   dashboardTelemetry.addData("Best Match Color Swatch:", result.closestSwatch);
            //     dashboardTelemetry.addLine(String.format("R %3d, G %3d, B %3d", Color.red(result.rgb), Color.green(result.rgb), Color.blue(result.rgb)));
@@ -136,9 +136,9 @@ public class Drive extends LinearOpMode {
 
 
 
-            if (gamepad2.dpad_up && ((robot.spool.getCurrentPosition() < spoolUpperBounds) && !gamepad2.b)) {
+            if (gamepad2.dpad_up && ((robot.spool.getCurrentPosition() < spoolUpperBounds) || gamepad2.b)) {
                 robot.spool.set(1);
-            } else if (gamepad2.dpad_down && ((robot.spool.getCurrentPosition() > spoolLowerBounds) && !gamepad2.b)) {
+            } else if (gamepad2.dpad_down && ((robot.spool.getCurrentPosition() > spoolLowerBounds) || gamepad2.b)) {
                 robot.spool.set(-1);
             } else {
                 robot.spool.set(0);
