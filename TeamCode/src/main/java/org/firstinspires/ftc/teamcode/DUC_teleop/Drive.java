@@ -43,19 +43,15 @@ public class Drive extends LinearOpMode {
 
     Hardware robot = new Hardware();
     YawPitchRollAngles robotOrientation;
-    public static int armTickUpper = 2000;
-    public static int armTickLower = 0;
     public static int armTickPosition = 0;
     public static double positionCoefficient=.01;
     double precisionCoefficient = 1;
+    double precisionCoefficient2 = 1;
     double rightStickYValue;
-    double armPower = 0;
-    boolean intakeMacro = false;
     double intervalMS = 100;
     double heading = 0;
     boolean clawOpen = false;
     ElapsedTime timerArmRotate = new ElapsedTime();
-    ElapsedTime macro1 = new ElapsedTime();
 
 
     @Override
@@ -126,6 +122,11 @@ public class Drive extends LinearOpMode {
             } else {
                 precisionCoefficient = 1;
             }
+            if (gamepad2.right_trigger > 0) {
+                precisionCoefficient2 = 0.5;
+            } else {
+                precisionCoefficient2 = 1;
+            }
             reader.readValue();
             if (reader.wasJustReleased()) {
                 clawOpen = !clawOpen;
@@ -139,9 +140,9 @@ public class Drive extends LinearOpMode {
 
 
             if (gamepad2.dpad_up && ((robot.spool.getCurrentPosition() < spoolUpperBounds) || gamepad2.b)) {
-                robot.spool.set(1);
+                robot.spool.set(1 * precisionCoefficient2);
             } else if (gamepad2.dpad_down && ((robot.spool.getCurrentPosition() > spoolLowerBounds) || gamepad2.b)) {
-                robot.spool.set(-1);
+                robot.spool.set(-1 * precisionCoefficient2);
             } else {
                 robot.spool.set(0);
             }
@@ -149,7 +150,7 @@ public class Drive extends LinearOpMode {
             rightStickYValue = Math.cbrt(-gamepad2.right_stick_y);
             if(rightStickYValue>0 || rightStickYValue<0){
                 if (timerArmRotate.milliseconds() >= intervalMS) {
-                    armTickPosition += (int) rightStickYValue * (100 );
+                    armTickPosition += (int) rightStickYValue * (100 * precisionCoefficient2);
                     timerArmRotate.reset();
                 }
             } else if (gamepad2.a) {
