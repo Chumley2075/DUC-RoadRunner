@@ -5,50 +5,47 @@ import static org.firstinspires.ftc.teamcode.lib.Hardware.openClawAngle;
 
 import androidx.annotation.NonNull;
 
-// RR-specific imports
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.Pose2d;
-import com.acmerobotics.roadrunner.Rotation2d;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
 import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.ftc.Actions;
-
-// Non-RR imports
 import com.arcrobotics.ftclib.hardware.ServoEx;
 import com.arcrobotics.ftclib.hardware.SimpleServo;
 import com.arcrobotics.ftclib.hardware.motors.Motor;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
+
 import org.firstinspires.ftc.teamcode.MecanumDrive;
+
 @Config
-@Autonomous(name = "TEST_AUTO", group = "Autonomous")
-public class autotest extends LinearOpMode {
+@Autonomous(name = "BLUE_FRONTSTAGE_CLIP", group = "Autonomous")
+public class BLUE_FRONTSTAGE_CLIP extends LinearOpMode {
 
     int armTickPosition = 250;
-    public static int hookPosition = 1850;
+    public static int hookPosition = 1800;
 
     @Override
     public void runOpMode() throws InterruptedException {
-        Pose2d initialPose = new Pose2d(-37, -64, Math.toRadians(90));
+        Pose2d initialPose = new Pose2d(-37, 64, Math.toRadians(270));
         MecanumDrive drive = new MecanumDrive(hardwareMap, initialPose);
         Claw claw = new Claw(hardwareMap);
         Spool spool = new Spool(hardwareMap);
         Arm arm = new Arm(hardwareMap);
 
-        Pose2d highRung = new Pose2d(10, -40, Math.toRadians(90));
-        Pose2d highRungLatch = new Pose2d(10, -35, Math.toRadians(90));
-        Vector2d observation = new Vector2d(60, -64);
-        Pose2d ascentArea = new Pose2d(-10, -15, Math.toRadians(20));
+        Pose2d highRung = new Pose2d(-37, 35, Math.toRadians(270));
+        Pose2d highRungLatch = new Pose2d(-37, 30, Math.toRadians(270));
+        Vector2d observation = new Vector2d(-65, 60);
+        Pose2d ascentArea = new Pose2d(-10, 15, Math.toRadians(20));
 
         TrajectoryActionBuilder strafeToHighRung = drive.actionBuilder(initialPose)
                 .splineToLinearHeading(highRung, Math.toRadians(90));
@@ -87,7 +84,7 @@ public class autotest extends LinearOpMode {
                                 highRungLatch2.build(),
                                 claw.openClaw(),
                                 new SleepAction(1),
-                                parkTier1Ascent.build(),
+                                parkObservation.build(),
                                 arm.low()
                         ),
                         arm.keepPosition()

@@ -158,6 +158,7 @@ public class Drive extends LinearOpMode {
             } else if (gamepad2.y) {
                 armTickPosition = 2500;
             }
+            if (gamepad2.left_bumper) {robot.armRotate.resetEncoder();}
             keepPosition();
 
             /*
