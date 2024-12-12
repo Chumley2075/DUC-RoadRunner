@@ -39,7 +39,7 @@ public class Hardware {
     public static double spoolUpperBounds = 2000;
     public static InterpLUT armAngles;
     public static double openClawAngle = 15;
-    public static double closeClawAngle = 87;
+    public static double closeClawAngle = 90;
 
 
     public void init(HardwareMap hwMap) {

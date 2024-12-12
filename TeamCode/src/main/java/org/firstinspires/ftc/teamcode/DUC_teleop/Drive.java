@@ -58,6 +58,7 @@ public class Drive extends LinearOpMode {
     public void runOpMode() {
 
         robot.init(hardwareMap);
+        robot.imu.resetYaw();
 
         telemetry.addLine("Finished INIT");
         telemetry.update();
@@ -71,6 +72,7 @@ public class Drive extends LinearOpMode {
         robot.spool.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
         robot.spool.resetEncoder();
         robot.armRotate.resetEncoder();
+
 
         heading = robot.robotOrientation.getYaw(AngleUnit.DEGREES);
 
@@ -140,7 +142,9 @@ public class Drive extends LinearOpMode {
 
 
             if (gamepad2.dpad_up && ((robot.spool.getCurrentPosition() < spoolUpperBounds) || gamepad2.b)) {
-                robot.spool.set(1 * precisionCoefficient2);
+                if (robot.armRotate.getCurrentPosition() < 3000) {
+                    robot.spool.set(1 * precisionCoefficient2);
+                }
             } else if (gamepad2.dpad_down && ((robot.spool.getCurrentPosition() > spoolLowerBounds) || gamepad2.b)) {
                 robot.spool.set(-1 * precisionCoefficient2);
             } else {
@@ -150,7 +154,7 @@ public class Drive extends LinearOpMode {
             rightStickYValue = Math.cbrt(-gamepad2.right_stick_y);
             if(rightStickYValue>0 || rightStickYValue<0){
                 if (timerArmRotate.milliseconds() >= intervalMS) {
-                    armTickPosition += (int) rightStickYValue * (100 * precisionCoefficient2);
+                    armTickPosition += (int) ((int) rightStickYValue * (100 * precisionCoefficient2));
                     timerArmRotate.reset();
                 }
             } else if (gamepad2.a) {
@@ -158,7 +162,11 @@ public class Drive extends LinearOpMode {
             } else if (gamepad2.y) {
                 armTickPosition = 2500;
             }
-            if (gamepad2.left_bumper) {robot.armRotate.resetEncoder();}
+            if (gamepad2.left_bumper) {
+                robot.armRotate.resetEncoder();
+                armTickPosition = 0;
+
+            }
             keepPosition();
 
             /*

@@ -42,7 +42,7 @@ public class BLUE_FRONTSTAGE_CLIP extends LinearOpMode {
         Spool spool = new Spool(hardwareMap);
         Arm arm = new Arm(hardwareMap);
 
-        Pose2d highRung = new Pose2d(-37, 35, Math.toRadians(270));
+        Pose2d highRung = new Pose2d(-37, 33, Math.toRadians(270));
         Pose2d highRungLatch = new Pose2d(-37, 30, Math.toRadians(270));
         Vector2d observation = new Vector2d(-65, 60);
         Pose2d ascentArea = new Pose2d(-10, 15, Math.toRadians(20));
@@ -81,11 +81,13 @@ public class BLUE_FRONTSTAGE_CLIP extends LinearOpMode {
                                 ),
                                 highRungLatch1.build(),
                                 arm.highRung2(),
-                                highRungLatch2.build(),
                                 claw.openClaw(),
                                 new SleepAction(1),
+                                highRungLatch2.build(),
+                                new SleepAction(1),
                                 parkObservation.build(),
-                                arm.low()
+                                arm.low(),
+                                claw.closeClaw()
                         ),
                         arm.keepPosition()
                 )

@@ -31,8 +31,10 @@ import org.firstinspires.ftc.teamcode.MecanumDrive;
 @Autonomous(name = "RED_BACKSTAGE_CLIP", group = "Autonomous")
 public class RED_BACKSTAGE_CLIP extends LinearOpMode {
 
+
     int armTickPosition = 250;
-    public static int hookPosition = 1850;
+    public static int hookPosition = 1700;
+    boolean clawClosed = true;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -75,22 +77,28 @@ public class RED_BACKSTAGE_CLIP extends LinearOpMode {
         Actions.runBlocking(
                 new ParallelAction(
                         new SequentialAction(
+                                claw.closeClaw(),
                                 new ParallelAction(
                                     strafeToHighRung.build(),
                                     arm.highRung()
                                 ),
                                 highRungLatch1.build(),
                                 arm.highRung2(),
-                                highRungLatch2.build(),
+                                new SleepAction(1),
                                 claw.openClaw(),
+                                highRungLatch2.build(),
                                 new SleepAction(1),
                                 parkObservation.build(),
-                                arm.low()
+                                arm.low(),
+                                claw.closeClaw()
                         ),
-                        arm.keepPosition()
+                        arm.keepPosition(),
+                        claw.tightenClaw()
                 )
 
         );
+
+        stop();
 
     }
 
@@ -118,7 +126,7 @@ public class RED_BACKSTAGE_CLIP extends LinearOpMode {
                 arm.setRunMode(Motor.RunMode.PositionControl);
                 arm.setPositionCoefficient(0.01);
                 arm.setTargetPosition(armTickPosition);
-                arm.set(.75);
+                arm.set(.65);
                 arm.setPositionTolerance(10);
                 return true;
             }
@@ -182,6 +190,7 @@ public class RED_BACKSTAGE_CLIP extends LinearOpMode {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
                 claw.turnToAngle(closeClawAngle);
+                clawClosed = true;
                 return false;
             }
         }
@@ -191,12 +200,26 @@ public class RED_BACKSTAGE_CLIP extends LinearOpMode {
         public class OpenClaw implements Action {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
-                claw.turnToAngle(openClawAngle);
+                clawClosed = false;
                 return false;
             }
         }
         public Action openClaw() {
             return new OpenClaw();
+        }
+        public class TightClaw implements Action {
+            @Override
+            public boolean run(@NonNull TelemetryPacket packet) {
+                if (clawClosed) {
+                    claw.turnToAngle(closeClawAngle);
+                } else {
+                    claw.turnToAngle(openClawAngle);
+                }
+                return true;
+            }
+        }
+        public Action tightenClaw() {
+            return new TightClaw();
         }
     }
 

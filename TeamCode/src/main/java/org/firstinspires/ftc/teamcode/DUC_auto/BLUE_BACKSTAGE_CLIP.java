@@ -87,7 +87,8 @@ public class BLUE_BACKSTAGE_CLIP extends LinearOpMode {
                                 claw.openClaw(),
                                 new SleepAction(1),
                                 parkTier1Ascent.build(),
-                                arm.tierOneAscent()
+                                arm.tierOneAscent(),
+                                claw.closeClaw()
                         ),
                         arm.keepPosition()
                 )

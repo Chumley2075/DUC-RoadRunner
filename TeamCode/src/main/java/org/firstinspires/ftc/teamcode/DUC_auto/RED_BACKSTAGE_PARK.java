@@ -28,24 +28,23 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
 
 @Config
-@Autonomous(name = "RED_FRONTSTAGE_CLIP", group = "Autonomous")
-public class RED_FRONTSTAGE_CLIP extends LinearOpMode {
+@Autonomous(name = "RED_BACKSTAGE_PARK", group = "Autonomous")
+public class RED_BACKSTAGE_PARK extends LinearOpMode {
 
     int armTickPosition = 250;
-    public static int hookPosition = 1750;
-    boolean clawClosed = false;
+    public static int hookPosition = 1850;
 
     @Override
     public void runOpMode() throws InterruptedException {
-        Pose2d initialPose = new Pose2d(-37, -64, Math.toRadians(90));
+        Pose2d initialPose = new Pose2d(37, -64, Math.toRadians(90));
         MecanumDrive drive = new MecanumDrive(hardwareMap, initialPose);
         Claw claw = new Claw(hardwareMap);
         Spool spool = new Spool(hardwareMap);
         Arm arm = new Arm(hardwareMap);
 
-        Pose2d highRung = new Pose2d(10, -40, Math.toRadians(90));
-        Pose2d highRungLatch = new Pose2d(10, -35, Math.toRadians(90));
-        Vector2d observation = new Vector2d(60, -64);
+        Pose2d highRung = new Pose2d(37, -35, Math.toRadians(90));
+        Pose2d highRungLatch = new Pose2d(37, -30, Math.toRadians(90));
+        Vector2d observation = new Vector2d(65, -60);
         Pose2d ascentArea = new Pose2d(-10, -15, Math.toRadians(20));
 
         TrajectoryActionBuilder strafeToHighRung = drive.actionBuilder(initialPose)
@@ -58,7 +57,7 @@ public class RED_FRONTSTAGE_CLIP extends LinearOpMode {
                 .waitSeconds(1)
                 .splineToLinearHeading(highRung, Math.toRadians(90));
 
-        TrajectoryActionBuilder parkObservation = drive.actionBuilder(highRung)
+        TrajectoryActionBuilder parkObservation = drive.actionBuilder(initialPose)
                 .strafeTo(observation);
 
         TrajectoryActionBuilder parkTier1Ascent = drive.actionBuilder(highRung)
@@ -76,22 +75,9 @@ public class RED_FRONTSTAGE_CLIP extends LinearOpMode {
         Actions.runBlocking(
                 new ParallelAction(
                         new SequentialAction(
-                                new ParallelAction(
-                                    strafeToHighRung.build(),
-                                    arm.highRung()
-                                ),
-                                highRungLatch1.build(),
-                                arm.highRung2(),
-                                claw.openClaw(),
-                                new SleepAction(1),
-                                highRungLatch2.build(),
-                                new SleepAction(1),
-                                parkTier1Ascent.build(),
-                                arm.tierOneArm(),
-                                claw.closeClaw()
+                                parkObservation.build()
                         ),
-                        arm.keepPosition(),
-                        claw.tightenClaw()
+                        arm.keepPosition()
                 )
 
         );
@@ -175,22 +161,6 @@ public class RED_FRONTSTAGE_CLIP extends LinearOpMode {
         public Action low() {
             return new Low();
         }
-
-        public class TierOneArm implements Action {
-            @Override
-            public boolean run(@NonNull TelemetryPacket packet) {
-                armTickPosition = 1250;
-                if (arm.atTargetPosition()) {
-                    return false;
-                } else {
-                    return true;
-                }
-            }
-        }
-        public Action tierOneArm() {
-            return new TierOneArm();
-        }
-
     }
     public class Claw {
         private ServoEx claw;
@@ -202,7 +172,6 @@ public class RED_FRONTSTAGE_CLIP extends LinearOpMode {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
                 claw.turnToAngle(closeClawAngle);
-                clawClosed = true;
                 return false;
             }
         }
@@ -212,26 +181,12 @@ public class RED_FRONTSTAGE_CLIP extends LinearOpMode {
         public class OpenClaw implements Action {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
-                clawClosed = false;
+                claw.turnToAngle(openClawAngle);
                 return false;
             }
         }
         public Action openClaw() {
             return new OpenClaw();
-        }
-        public class TightClaw implements Action {
-            @Override
-            public boolean run(@NonNull TelemetryPacket packet) {
-                if (clawClosed) {
-                    claw.turnToAngle(closeClawAngle);
-                } else {
-                    claw.turnToAngle(openClawAngle);
-                }
-                return true;
-            }
-        }
-        public Action tightenClaw() {
-            return new TightClaw();
         }
     }
 

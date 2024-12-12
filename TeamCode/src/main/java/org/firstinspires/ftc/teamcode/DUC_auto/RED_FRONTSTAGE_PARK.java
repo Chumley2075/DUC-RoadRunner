@@ -28,12 +28,12 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
 
 @Config
-@Autonomous(name = "RED_FRONTSTAGE_CLIP", group = "Autonomous")
-public class RED_FRONTSTAGE_CLIP extends LinearOpMode {
+@Autonomous(name = "RED_FRONTSTAGE_PARK", group = "Autonomous")
+public class RED_FRONTSTAGE_PARK extends LinearOpMode {
 
     int armTickPosition = 250;
-    public static int hookPosition = 1750;
-    boolean clawClosed = false;
+    public static int hookPosition = 1700;
+
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -61,7 +61,7 @@ public class RED_FRONTSTAGE_CLIP extends LinearOpMode {
         TrajectoryActionBuilder parkObservation = drive.actionBuilder(highRung)
                 .strafeTo(observation);
 
-        TrajectoryActionBuilder parkTier1Ascent = drive.actionBuilder(highRung)
+        TrajectoryActionBuilder parkTier1Ascent = drive.actionBuilder(initialPose)
                 .strafeTo(new Vector2d(-37, -40))
                 .strafeTo(new Vector2d(-37, -15))
                 .splineToLinearHeading(ascentArea, Math.toRadians(90));
@@ -76,22 +76,10 @@ public class RED_FRONTSTAGE_CLIP extends LinearOpMode {
         Actions.runBlocking(
                 new ParallelAction(
                         new SequentialAction(
-                                new ParallelAction(
-                                    strafeToHighRung.build(),
-                                    arm.highRung()
-                                ),
-                                highRungLatch1.build(),
-                                arm.highRung2(),
-                                claw.openClaw(),
-                                new SleepAction(1),
-                                highRungLatch2.build(),
-                                new SleepAction(1),
                                 parkTier1Ascent.build(),
-                                arm.tierOneArm(),
-                                claw.closeClaw()
+                                arm.tierOneArm()
                         ),
-                        arm.keepPosition(),
-                        claw.tightenClaw()
+                        arm.keepPosition()
                 )
 
         );
@@ -190,7 +178,6 @@ public class RED_FRONTSTAGE_CLIP extends LinearOpMode {
         public Action tierOneArm() {
             return new TierOneArm();
         }
-
     }
     public class Claw {
         private ServoEx claw;
@@ -202,7 +189,6 @@ public class RED_FRONTSTAGE_CLIP extends LinearOpMode {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
                 claw.turnToAngle(closeClawAngle);
-                clawClosed = true;
                 return false;
             }
         }
@@ -212,26 +198,12 @@ public class RED_FRONTSTAGE_CLIP extends LinearOpMode {
         public class OpenClaw implements Action {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
-                clawClosed = false;
+                claw.turnToAngle(openClawAngle);
                 return false;
             }
         }
         public Action openClaw() {
             return new OpenClaw();
-        }
-        public class TightClaw implements Action {
-            @Override
-            public boolean run(@NonNull TelemetryPacket packet) {
-                if (clawClosed) {
-                    claw.turnToAngle(closeClawAngle);
-                } else {
-                    claw.turnToAngle(openClawAngle);
-                }
-                return true;
-            }
-        }
-        public Action tightenClaw() {
-            return new TightClaw();
         }
     }
 
