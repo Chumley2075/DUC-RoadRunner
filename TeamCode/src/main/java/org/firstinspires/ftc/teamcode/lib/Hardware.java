@@ -34,6 +34,7 @@ public class Hardware {
     public YawPitchRollAngles robotOrientation;
     public IMU imu;
     public ServoEx claw;
+    public ServoEx specimenClaw;
     private HardwareMap hwMap;
     public static double spoolLowerBounds = 0;
     public static double spoolUpperBounds = 2000;
@@ -56,6 +57,7 @@ public class Hardware {
         spool = new Motor(hwMap, "spool");
         imu = hwMap.get(IMU.class, "imu");
         claw = new SimpleServo(hwMap, "claw", 0, 180);
+        specimenClaw = new SimpleServo(hwMap, "specimenClaw", 0, 180);
         //INITIALIZATION
 
         //imu
@@ -80,8 +82,9 @@ public class Hardware {
         rL.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
         rR.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
 
-        //init claw if it was NORMAL.........
+        //init claw
         claw.turnToAngle(90);
+        specimenClaw.turnToAngle(90);
 
         armAngles = new InterpLUT();
         armAngles.add(-10000, -61);

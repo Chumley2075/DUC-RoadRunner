@@ -51,6 +51,7 @@ public class Drive extends LinearOpMode {
     double intervalMS = 100;
     double heading = 0;
     boolean clawOpen = false;
+    boolean specimenClawOpen = false;
     ElapsedTime timerArmRotate = new ElapsedTime();
 
 
@@ -80,7 +81,8 @@ public class Drive extends LinearOpMode {
         Telemetry dashboardTelemetry = dashboard.getTelemetry();
         GamepadEx controller1 = new GamepadEx(gamepad1);
         GamepadEx controller2 = new GamepadEx(gamepad2);
-        ButtonReader reader = new ButtonReader(controller2, GamepadKeys.Button.X);
+        ButtonReader clawReader = new ButtonReader(controller2, GamepadKeys.Button.X);
+        ButtonReader specimenReader = new ButtonReader(controller1, GamepadKeys.Button.X);
         //Color sensor stuff
 
 
@@ -129,14 +131,24 @@ public class Drive extends LinearOpMode {
             } else {
                 precisionCoefficient2 = 1;
             }
-            reader.readValue();
-            if (reader.wasJustReleased()) {
+            clawReader.readValue();
+            if (clawReader.wasJustReleased()) {
                 clawOpen = !clawOpen;
             }
             if (clawOpen) {
                 robot.claw.turnToAngle(openClawAngle);
             } else {
                 robot.claw.turnToAngle(closeClawAngle);
+            }
+
+            specimenReader.readValue();
+            if (specimenReader.wasJustReleased()) {
+                specimenClawOpen = !specimenClawOpen;
+            }
+            if (specimenClawOpen) {
+                robot.specimenClaw.turnToAngle(openClawAngle);
+            } else {
+                robot.specimenClaw.turnToAngle(95);
             }
 
 
