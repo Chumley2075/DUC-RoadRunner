@@ -6,6 +6,8 @@ import static org.firstinspires.ftc.teamcode.Constants.clawWeightCoefficient;
 import static org.firstinspires.ftc.teamcode.lib.Hardware.armAngles;
 import static org.firstinspires.ftc.teamcode.lib.Hardware.closeClawAngle;
 import static org.firstinspires.ftc.teamcode.lib.Hardware.openClawAngle;
+import static org.firstinspires.ftc.teamcode.lib.Hardware.specimenLowerBounds;
+import static org.firstinspires.ftc.teamcode.lib.Hardware.specimenUpperBounds;
 import static org.firstinspires.ftc.teamcode.lib.Hardware.spoolLowerBounds;
 import static org.firstinspires.ftc.teamcode.lib.Hardware.spoolUpperBounds;
 
@@ -50,10 +52,11 @@ public class Drive extends LinearOpMode {
     double rightStickYValue;
     double intervalMS = 100;
     double heading = 0;
-    boolean clawOpen = false;
+    boolean clawOpen = true;
     boolean specimenClawOpen = false;
     ElapsedTime timerArmRotate = new ElapsedTime();
-
+    ElapsedTime timerArmSpecimen = new ElapsedTime();
+    public int specimenTargetPosition = 0;
 
     @Override
     public void runOpMode() {
@@ -73,6 +76,7 @@ public class Drive extends LinearOpMode {
         robot.spool.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
         robot.spool.resetEncoder();
         robot.armRotate.resetEncoder();
+        robot.specimenArm.resetEncoder();
 
 
         heading = robot.robotOrientation.getYaw(AngleUnit.DEGREES);
@@ -94,6 +98,7 @@ public class Drive extends LinearOpMode {
             if (DEBUG) {
 
                 telemetry.addData("Spool encoders: ", robot.spool.getCurrentPosition());
+                telemetry.addData("Specimen encoders: ", robot.specimenArm.getCurrentPosition());
                 telemetry.addData("Arm tick Pos: ", robot.armRotate.getCurrentPosition());
                 telemetry.addData("Yaw:", robot.robotOrientation.getYaw(AngleUnit.DEGREES));
             //    telemetry.addLine(String.format("R %3d, G %3d, B %3d", Color.red(result.rgb), Color.green(result.rgb), Color.blue(result.rgb)));
@@ -154,13 +159,30 @@ public class Drive extends LinearOpMode {
 
 
             if (gamepad2.dpad_up && ((robot.spool.getCurrentPosition() < spoolUpperBounds) || gamepad2.b)) {
-                if (robot.armRotate.getCurrentPosition() < 3000) {
+                if (robot.armRotate.getCurrentPosition() < 3010) {
                     robot.spool.set(1 * precisionCoefficient2);
                 }
             } else if (gamepad2.dpad_down && ((robot.spool.getCurrentPosition() > spoolLowerBounds) || gamepad2.b)) {
                 robot.spool.set(-1 * precisionCoefficient2);
             } else {
                 robot.spool.set(0);
+            }
+
+            if(gamepad1.dpad_up || gamepad1.dpad_down){
+                if (timerArmSpecimen.milliseconds() >= intervalMS) {
+                    if (gamepad1.dpad_up) {
+                        specimenTargetPosition += (int) 100 * precisionCoefficient;
+                    } else if (gamepad1.dpad_down) {
+                        specimenTargetPosition += (int) -100 * precisionCoefficient;
+                    }
+                    timerArmSpecimen.reset();
+                }
+            } else if (gamepad1.b) {
+                specimenTargetPosition= 1500;
+            } else if (gamepad1.a) {
+                specimenTargetPosition = 0;
+            } else if (gamepad1.y) {
+                specimenTargetPosition = 2000;
             }
 
             rightStickYValue = Math.cbrt(-gamepad2.right_stick_y);
@@ -218,5 +240,11 @@ public class Drive extends LinearOpMode {
         robot.armRotate.setTargetPosition(armTickPosition);
         robot.armRotate.set(.75);
         robot.armRotate.setPositionTolerance(10);
+
+        robot.specimenArm.setRunMode(Motor.RunMode.PositionControl);
+        robot.specimenArm.setPositionCoefficient(positionCoefficient);
+        robot.specimenArm.setTargetPosition(specimenTargetPosition);
+        robot.specimenArm.set(1);
+        robot.specimenArm.setPositionTolerance(10);
     }
 }

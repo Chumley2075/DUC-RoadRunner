@@ -29,7 +29,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 public class Hardware {
 
     //wheel motors
-    public Motor fL, fR, rL, rR, armRotate, spool;
+    public Motor fL, fR, rL, rR, armRotate, spool, specimenArm;
     //imu and YPRA
     public YawPitchRollAngles robotOrientation;
     public IMU imu;
@@ -38,6 +38,8 @@ public class Hardware {
     private HardwareMap hwMap;
     public static double spoolLowerBounds = 0;
     public static double spoolUpperBounds = 2000;
+    public static double specimenUpperBounds = 5000;
+    public static double specimenLowerBounds = 0;
     public static InterpLUT armAngles;
     public static double openClawAngle = 15;
     public static double closeClawAngle = 90;
@@ -53,6 +55,7 @@ public class Hardware {
         fR = new Motor(hwMap, "rightFront");
         rL = new Motor(hwMap, "leftBack");
         rR = new Motor(hwMap, "rightBack");
+        specimenArm = new Motor(hwMap, "specimenArm");
         armRotate = new Motor(hwMap, "arm");
         spool = new Motor(hwMap, "spool");
         imu = hwMap.get(IMU.class, "imu");
@@ -81,9 +84,11 @@ public class Hardware {
         fR.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
         rL.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
         rR.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
+        specimenArm.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
+
 
         //init claw
-        claw.turnToAngle(90);
+        claw.turnToAngle(15);
         specimenClaw.turnToAngle(90);
 
         armAngles = new InterpLUT();

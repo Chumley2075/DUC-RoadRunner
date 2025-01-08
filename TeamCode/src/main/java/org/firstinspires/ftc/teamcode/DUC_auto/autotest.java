@@ -35,38 +35,18 @@ import org.firstinspires.ftc.teamcode.MecanumDrive;
 public class autotest extends LinearOpMode {
 
     int armTickPosition = 250;
-    public static int hookPosition = 1850;
 
     @Override
     public void runOpMode() throws InterruptedException {
         Pose2d initialPose = new Pose2d(-37, -64, Math.toRadians(90));
         MecanumDrive drive = new MecanumDrive(hardwareMap, initialPose);
         Claw claw = new Claw(hardwareMap);
-        Spool spool = new Spool(hardwareMap);
         Arm arm = new Arm(hardwareMap);
 
         Pose2d highRung = new Pose2d(10, -40, Math.toRadians(90));
-        Pose2d highRungLatch = new Pose2d(10, -35, Math.toRadians(90));
-        Vector2d observation = new Vector2d(60, -64);
-        Pose2d ascentArea = new Pose2d(-10, -15, Math.toRadians(20));
 
         TrajectoryActionBuilder strafeToHighRung = drive.actionBuilder(initialPose)
                 .splineToLinearHeading(highRung, Math.toRadians(90));
-
-        TrajectoryActionBuilder highRungLatch1 = drive.actionBuilder(highRung)
-                .splineToLinearHeading(highRungLatch, Math.toRadians(90));
-
-        TrajectoryActionBuilder highRungLatch2 = drive.actionBuilder(highRungLatch)
-                .waitSeconds(1)
-                .splineToLinearHeading(highRung, Math.toRadians(90));
-
-        TrajectoryActionBuilder parkObservation = drive.actionBuilder(highRung)
-                .strafeTo(observation);
-
-        TrajectoryActionBuilder parkTier1Ascent = drive.actionBuilder(highRung)
-                .strafeTo(new Vector2d(-37, -40))
-                .strafeTo(new Vector2d(-37, -15))
-                .splineToLinearHeading(ascentArea, Math.toRadians(90));
 
 
 
@@ -96,21 +76,11 @@ public class autotest extends LinearOpMode {
         );
 
     }
-
-    public class Spool {
-        private DcMotorEx spool;
-
-        public Spool(HardwareMap hardwareMap) {
-            spool = hardwareMap.get(DcMotorEx.class, "spool");
-            spool.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-            spool.setDirection(DcMotorSimple.Direction.FORWARD);
-        }
-    }
     public class Arm {
         private Motor arm;
 
         public Arm(HardwareMap hardwareMap) {
-            arm = new Motor(hardwareMap, "arm");
+            arm = new Motor(hardwareMap, "specimenArm");
             arm.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
             arm.setInverted(true);
         }
@@ -133,7 +103,7 @@ public class autotest extends LinearOpMode {
         public class HighRung implements Action {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
-                armTickPosition = hookPosition;
+                armTickPosition = 2000;
                 keepPosition();
                 if (arm.atTargetPosition()) {
                     return false;
@@ -148,7 +118,7 @@ public class autotest extends LinearOpMode {
         public class HighRung2 implements Action {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
-                armTickPosition = hookPosition-200;
+                armTickPosition = 1500;
                 if (arm.atTargetPosition()) {
                     return false;
                 } else {
@@ -179,7 +149,7 @@ public class autotest extends LinearOpMode {
         private ServoEx claw;
 
         public Claw(HardwareMap hardwareMap) {
-            claw = new SimpleServo(hardwareMap, "claw", 0, 180);
+            claw = new SimpleServo(hardwareMap, "specimenClaw", 0, 180);
         }
         public class CloseClaw implements Action {
             @Override
