@@ -5,36 +5,32 @@ import static org.firstinspires.ftc.teamcode.lib.Hardware.openClawAngle;
 
 import androidx.annotation.NonNull;
 
-// RR-specific imports
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.Pose2d;
-import com.acmerobotics.roadrunner.Rotation2d;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
 import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
+import com.acmerobotics.roadrunner.TurnConstraints;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.ftc.Actions;
-
-// Non-RR imports
 import com.arcrobotics.ftclib.hardware.ServoEx;
 import com.arcrobotics.ftclib.hardware.SimpleServo;
 import com.arcrobotics.ftclib.hardware.motors.Motor;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
+
 import org.firstinspires.ftc.teamcode.MecanumDrive;
+
 @Config
-@Autonomous(name = "TEST_AUTO", group = "Autonomous")
-public class autotest extends LinearOpMode {
+@Autonomous(name = "OTHER_TEST_AUTO", group = "Autonomous")
+public class autotest2 extends LinearOpMode {
 
     int armTickPosition = 0;
+    public static double toTurnTo = 180;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -43,29 +39,14 @@ public class autotest extends LinearOpMode {
         Claw claw = new Claw(hardwareMap);
         Arm arm = new Arm(hardwareMap);
 
-        Vector2d highRung = new Vector2d(-10, 28);
 
-        TrajectoryActionBuilder strafeToHighRung = drive.actionBuilder(initialPose)
-                .strafeToLinearHeading(highRung, Math.toRadians(90));
+        Vector2d highRung = new Vector2d(-10, 29);
 
-        TrajectoryActionBuilder givePlayerFirstSample = drive.actionBuilder(new Pose2d(-10, 30, Math.toRadians(90)))
-                .strafeTo(new Vector2d(-56, 33))
-                .strafeToLinearHeading(new Vector2d(-56, 13), Math.toRadians(270))
-                .strafeTo(new Vector2d(-73, 10))
-                .strafeTo(new Vector2d(-73, 50))
-                .strafeTo(new Vector2d(-73, 10))
-                .strafeTo(new Vector2d(-82, 10))
-                .strafeTo(new Vector2d(-82, 50));
-
-        TrajectoryActionBuilder getFirstSpecimen = drive.actionBuilder(new Pose2d(-82, 50, Math.toRadians(270)))
-                .strafeTo(new Vector2d(-72, 50))
-                .strafeTo(new Vector2d(-72, 60));
-
-        TrajectoryActionBuilder hangFirstSpecimen = drive.actionBuilder(new Pose2d(-72, 60, Math.toRadians(270)))
-                        .strafeToLinearHeading(new Vector2d(-20, 40), Math.toRadians(80))
-                        .strafeTo(new Vector2d(-20, 20));
-
-
+        TrajectoryActionBuilder turn = drive.actionBuilder(initialPose)
+                .waitSeconds(6)
+//                .turn(Math.toRadians(toTurnTo))
+                .strafeTo(new Vector2d(-20, 64))
+                .waitSeconds(5);
 
 
 
@@ -77,27 +58,7 @@ public class autotest extends LinearOpMode {
         Actions.runBlocking(
                 new ParallelAction(
                         new SequentialAction(
-                                new ParallelAction(
-                                    strafeToHighRung.build(),
-                                    arm.highRung()
-                                ),
-                                arm.highRung2(),
-                                new SleepAction(0.25),
-                                claw.openClaw(),
-                                new SleepAction(1),
-                                givePlayerFirstSample.build(),
-                                new ParallelAction(
-                                        arm.low(),
-                                        getFirstSpecimen.build()
-                                ),
-                                claw.closeClaw(),
-                                new ParallelAction(
-                                        arm.highRung(),
-                                        hangFirstSpecimen.build()
-                                ),
-                                arm.highRung2(),
-                                new SleepAction(0.25),
-                                claw.openClaw()
+                                turn.build()
                         ),
                         arm.keepPosition()
                 )
