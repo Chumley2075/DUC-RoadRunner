@@ -104,6 +104,7 @@ public class openCVTest extends LinearOpMode {
         waitForStart();
         if (isStopRequested()) return;
 
+        // TODO: Integrate ability to collect the pixel coordinate data
 //        while (opModeIsActive()) {
 //            telemetry.addData("Coordinate", "(" + (int) cX + ", " + (int) cY + ")");
 //            telemetry.addData("Distance in Inch", (getDistance(width)));
@@ -303,14 +304,8 @@ public class openCVTest extends LinearOpMode {
             }
 
             if(specimenContour != null) {
+                // TODO: Check if we want to remove the drawing features since not needed outside of measurement
                 Imgproc.drawContours(input, contours, contours.indexOf(specimenContour), new Scalar(255, 0, 0), 2);
-
-//                width = calculateWidth(specimenContour);
-//
-//                // Display the width next to the label
-//                String widthLabel = "Width: " + (int) width + " pixels";
-//                Imgproc.putText(input, widthLabel, new Point(cX + 10, cY + 20), Imgproc.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(0, 255, 0), 2);
-//                //Display the Distance
 
                 String distanceLabel = "Distance: " + String.format("%.2f", getDistance(width)) + " inches";
                 Imgproc.putText(input, distanceLabel, new Point(cX + 10, cY + 60), Imgproc.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(0, 255, 0), 2);
@@ -335,34 +330,19 @@ public class openCVTest extends LinearOpMode {
             Imgproc.cvtColor(frame, hsvFrame, Imgproc.COLOR_BGR2HSV);
 
             // TODO: Check which side of field; this one is blue
-            Scalar lowerBlue = new Scalar(180, 100, 100);
-            Scalar upperBlue = new Scalar(275, 255, 255);
+            Scalar lowerColor = new Scalar(180, 100, 100);
+            Scalar upperColor = new Scalar(275, 255, 255);
 
-
-            Mat blueMask = new Mat();
-            Core.inRange(hsvFrame, lowerBlue, upperBlue, blueMask);
+            Mat colorMask = new Mat();
+            Core.inRange(hsvFrame, lowerColor, upperColor, colorMask);
 
             Mat kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(5, 5));
-            Imgproc.morphologyEx(yellowMask, yellowMask, Imgproc.MORPH_OPEN, kernel);
-            Imgproc.morphologyEx(yellowMask, yellowMask, Imgproc.MORPH_CLOSE, kernel);
+            Imgproc.morphologyEx(colorMask, colorMask, Imgproc.MORPH_OPEN, kernel);
+            Imgproc.morphologyEx(colorMask, colorMask, Imgproc.MORPH_CLOSE, kernel);
 
-            return yellowMask;
+            return colorMask;
         }
 
-//        private MatOfPoint findLargestContour(List<MatOfPoint> contours) {
-//            double maxArea = 0;
-//            MatOfPoint largestContour = null;
-//
-//            for (MatOfPoint contour : contours) {
-//                double area = Imgproc.contourArea(contour);
-//                if (area > maxArea) {
-//                    maxArea = area;
-//                    largestContour = contour;
-//                }
-//            }
-//
-//            return largestContour;
-//        }
         private double calculateWidth(MatOfPoint contour) {
             Rect boundingRect = Imgproc.boundingRect(contour);
             return boundingRect.width;
