@@ -28,7 +28,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
 
 @Config
-@Autonomous(name = "BLUE_FRONTSTAGE_PARK", group = "Autonomous")
+@Autonomous(name = "3BLUE_FRONTSTAGE_PARK", group = "Autonomous")
 public class BLUE_FRONTSTAGE_PARK extends LinearOpMode {
 
     int armTickPosition = 250;

@@ -28,7 +28,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
 
 @Config
-@Autonomous(name = "BLUE_BACKSTAGE_CLIP", group = "Autonomous")
+@Autonomous(name = "2BLUE_BACKSTAGE_CLIP", group = "Autonomous")
 public class BLUE_BACKSTAGE_CLIP extends LinearOpMode {
 
     int armTickPosition = 250;
@@ -37,34 +37,21 @@ public class BLUE_BACKSTAGE_CLIP extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
-        Pose2d initialPose = new Pose2d(37, 64, Math.toRadians(270));
+        Pose2d initialPose = new Pose2d(37, 64, Math.toRadians(90));
         MecanumDrive drive = new MecanumDrive(hardwareMap, initialPose);
         Claw claw = new Claw(hardwareMap);
         Spool spool = new Spool(hardwareMap);
         Arm arm = new Arm(hardwareMap);
 
-        Pose2d highRung = new Pose2d(-10, 40, Math.toRadians(270));
-        Pose2d highRungLatch = new Pose2d(-10, 35, Math.toRadians(270));
-        Vector2d observation = new Vector2d(60, 64);
         Vector2d ascentArea = new Vector2d(-10, 15);
+        Vector2d highRung = new Vector2d(-10, 28);
 
         TrajectoryActionBuilder strafeToHighRung = drive.actionBuilder(initialPose)
-                .splineToLinearHeading(highRung, Math.toRadians(270));
+                .strafeToLinearHeading(highRung, Math.toRadians(90));
 
-        TrajectoryActionBuilder highRungLatch1 = drive.actionBuilder(highRung)
-                .splineToLinearHeading(highRungLatch, Math.toRadians(270));
-
-        TrajectoryActionBuilder highRungLatch2 = drive.actionBuilder(highRungLatch)
-                .waitSeconds(1)
-                .splineToLinearHeading(highRung, Math.toRadians(270));
-
-        TrajectoryActionBuilder parkObservation = drive.actionBuilder(highRung)
-                .strafeTo(observation);
-
-        TrajectoryActionBuilder parkTier1Ascent = drive.actionBuilder(highRung)
+        TrajectoryActionBuilder parkTier1Ascent = drive.actionBuilder(new Pose2d(-10, 28, Math.toRadians(90)))
                 .strafeTo(new Vector2d(37, 40))
                 .strafeTo(new Vector2d(37, 15))
-                .setReversed(true)
                 .strafeToLinearHeading(ascentArea, Math.toRadians(180));
 
 
@@ -78,17 +65,14 @@ public class BLUE_BACKSTAGE_CLIP extends LinearOpMode {
                 new ParallelAction(
                         new SequentialAction(
                                 new ParallelAction(
-                                    strafeToHighRung.build(),
-                                    arm.highRung()
+                                        strafeToHighRung.build(),
+                                        arm.highRung()
                                 ),
-                                highRungLatch1.build(),
                                 arm.highRung2(),
-                                highRungLatch2.build(),
+                                new SleepAction(0.25),
                                 claw.openClaw(),
-                                new SleepAction(1),
-                                parkTier1Ascent.build(),
-                                arm.tierOneAscent(),
-                                claw.closeClaw()
+                                new SleepAction(0.25),
+                                parkTier1Ascent.build()
                         ),
                         arm.keepPosition()
                 )
@@ -110,9 +94,9 @@ public class BLUE_BACKSTAGE_CLIP extends LinearOpMode {
         private Motor arm;
 
         public Arm(HardwareMap hardwareMap) {
-            arm = new Motor(hardwareMap, "arm");
+            arm = new Motor(hardwareMap, "specimenArm");
             arm.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
-            arm.setInverted(true);
+            arm.resetEncoder();
         }
 
         public class KeepPosition implements Action {
@@ -121,19 +105,19 @@ public class BLUE_BACKSTAGE_CLIP extends LinearOpMode {
                 arm.setRunMode(Motor.RunMode.PositionControl);
                 arm.setPositionCoefficient(0.01);
                 arm.setTargetPosition(armTickPosition);
-                arm.set(.75);
+                arm.set(1);
                 arm.setPositionTolerance(10);
                 return true;
             }
         }
         public Action keepPosition() {
-            return new KeepPosition();
+            return new Arm.KeepPosition();
         }
 
         public class HighRung implements Action {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
-                armTickPosition = hookPosition;
+                armTickPosition = 2000;
                 keepPosition();
                 if (arm.atTargetPosition()) {
                     return false;
@@ -143,12 +127,12 @@ public class BLUE_BACKSTAGE_CLIP extends LinearOpMode {
             }
         }
         public Action highRung() {
-            return new HighRung();
+            return new Arm.HighRung();
         }
         public class HighRung2 implements Action {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
-                armTickPosition = hookPosition-200;
+                armTickPosition = 1300;
                 if (arm.atTargetPosition()) {
                     return false;
                 } else {
@@ -157,7 +141,7 @@ public class BLUE_BACKSTAGE_CLIP extends LinearOpMode {
             }
         }
         public Action highRung2() {
-            return new HighRung2();
+            return new Arm.HighRung2();
         }
 
         public class Low implements Action {
@@ -172,29 +156,14 @@ public class BLUE_BACKSTAGE_CLIP extends LinearOpMode {
             }
         }
         public Action low() {
-            return new Low();
-        }
-
-        public class TierOneAscent implements Action {
-            @Override
-            public boolean run(@NonNull TelemetryPacket packet) {
-                armTickPosition = 1250;
-                if (arm.atTargetPosition()) {
-                    return false;
-                } else {
-                    return true;
-                }
-            }
-        }
-        public Action tierOneAscent() {
-            return new TierOneAscent();
+            return new Arm.Low();
         }
     }
     public class Claw {
         private ServoEx claw;
 
         public Claw(HardwareMap hardwareMap) {
-            claw = new SimpleServo(hardwareMap, "claw", 0, 180);
+            claw = new SimpleServo(hardwareMap, "specimenClaw", 0, 180);
         }
         public class CloseClaw implements Action {
             @Override
@@ -204,7 +173,7 @@ public class BLUE_BACKSTAGE_CLIP extends LinearOpMode {
             }
         }
         public Action closeClaw() {
-            return new CloseClaw();
+            return new Claw.CloseClaw();
         }
         public class OpenClaw implements Action {
             @Override
@@ -214,7 +183,7 @@ public class BLUE_BACKSTAGE_CLIP extends LinearOpMode {
             }
         }
         public Action openClaw() {
-            return new OpenClaw();
+            return new Claw.OpenClaw();
         }
     }
 

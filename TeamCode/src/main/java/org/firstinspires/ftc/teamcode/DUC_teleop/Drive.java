@@ -119,6 +119,7 @@ public class Drive extends LinearOpMode {
 
             robot.robotOrientation = robot.imu.getRobotYawPitchRollAngles();
             if (gamepad1.left_bumper) {robot.imu.resetYaw();}
+            if (gamepad1.right_bumper) {robot.specimenArm.resetEncoder();}
             mecanum.driveFieldCentric(
                     controller1.getLeftX() * precisionCoefficient,
                     controller1.getLeftY() * precisionCoefficient,

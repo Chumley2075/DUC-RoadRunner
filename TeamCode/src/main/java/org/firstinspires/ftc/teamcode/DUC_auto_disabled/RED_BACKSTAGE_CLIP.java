@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.DUC_auto;
+package org.firstinspires.ftc.teamcode.DUC_auto_disabled;
 
 import static org.firstinspires.ftc.teamcode.lib.Hardware.closeClawAngle;
 import static org.firstinspires.ftc.teamcode.lib.Hardware.openClawAngle;
@@ -19,6 +19,7 @@ import com.arcrobotics.ftclib.hardware.ServoEx;
 import com.arcrobotics.ftclib.hardware.SimpleServo;
 import com.arcrobotics.ftclib.hardware.motors.Motor;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -28,24 +29,26 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
 
 @Config
-@Autonomous(name = "3RED_FRONTSTAGE_PARK", group = "Autonomous")
-public class RED_FRONTSTAGE_PARK extends LinearOpMode {
+@Disabled
+@Autonomous(name = "RED_BACKSTAGE_CLIP", group = "Autonomous")
+public class RED_BACKSTAGE_CLIP extends LinearOpMode {
+
 
     int armTickPosition = 250;
     public static int hookPosition = 1700;
-
+    boolean clawClosed = true;
 
     @Override
     public void runOpMode() throws InterruptedException {
-        Pose2d initialPose = new Pose2d(-37, -64, Math.toRadians(90));
+        Pose2d initialPose = new Pose2d(37, -64, Math.toRadians(90));
         MecanumDrive drive = new MecanumDrive(hardwareMap, initialPose);
         Claw claw = new Claw(hardwareMap);
         Spool spool = new Spool(hardwareMap);
         Arm arm = new Arm(hardwareMap);
 
-        Pose2d highRung = new Pose2d(10, -40, Math.toRadians(90));
-        Pose2d highRungLatch = new Pose2d(10, -35, Math.toRadians(90));
-        Vector2d observation = new Vector2d(60, -64);
+        Pose2d highRung = new Pose2d(37, -35, Math.toRadians(90));
+        Pose2d highRungLatch = new Pose2d(37, -30, Math.toRadians(90));
+        Vector2d observation = new Vector2d(65, -60);
         Pose2d ascentArea = new Pose2d(-10, -15, Math.toRadians(20));
 
         TrajectoryActionBuilder strafeToHighRung = drive.actionBuilder(initialPose)
@@ -61,7 +64,7 @@ public class RED_FRONTSTAGE_PARK extends LinearOpMode {
         TrajectoryActionBuilder parkObservation = drive.actionBuilder(highRung)
                 .strafeTo(observation);
 
-        TrajectoryActionBuilder parkTier1Ascent = drive.actionBuilder(initialPose)
+        TrajectoryActionBuilder parkTier1Ascent = drive.actionBuilder(highRung)
                 .strafeTo(new Vector2d(-37, -40))
                 .strafeTo(new Vector2d(-37, -15))
                 .splineToLinearHeading(ascentArea, Math.toRadians(90));
@@ -76,13 +79,28 @@ public class RED_FRONTSTAGE_PARK extends LinearOpMode {
         Actions.runBlocking(
                 new ParallelAction(
                         new SequentialAction(
-                                parkTier1Ascent.build(),
-                                arm.tierOneArm()
+                                claw.closeClaw(),
+                                new ParallelAction(
+                                    strafeToHighRung.build(),
+                                    arm.highRung()
+                                ),
+                                highRungLatch1.build(),
+                                arm.highRung2(),
+                                new SleepAction(1),
+                                claw.openClaw(),
+                                highRungLatch2.build(),
+                                new SleepAction(1),
+                                parkObservation.build(),
+                                arm.low(),
+                                claw.closeClaw()
                         ),
-                        arm.keepPosition()
+                        arm.keepPosition(),
+                        claw.tightenClaw()
                 )
 
         );
+
+        stop();
 
     }
 
@@ -110,7 +128,7 @@ public class RED_FRONTSTAGE_PARK extends LinearOpMode {
                 arm.setRunMode(Motor.RunMode.PositionControl);
                 arm.setPositionCoefficient(0.01);
                 arm.setTargetPosition(armTickPosition);
-                arm.set(.75);
+                arm.set(.65);
                 arm.setPositionTolerance(10);
                 return true;
             }
@@ -163,21 +181,6 @@ public class RED_FRONTSTAGE_PARK extends LinearOpMode {
         public Action low() {
             return new Low();
         }
-
-        public class TierOneArm implements Action {
-            @Override
-            public boolean run(@NonNull TelemetryPacket packet) {
-                armTickPosition = 1250;
-                if (arm.atTargetPosition()) {
-                    return false;
-                } else {
-                    return true;
-                }
-            }
-        }
-        public Action tierOneArm() {
-            return new TierOneArm();
-        }
     }
     public class Claw {
         private ServoEx claw;
@@ -189,6 +192,7 @@ public class RED_FRONTSTAGE_PARK extends LinearOpMode {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
                 claw.turnToAngle(closeClawAngle);
+                clawClosed = true;
                 return false;
             }
         }
@@ -198,12 +202,26 @@ public class RED_FRONTSTAGE_PARK extends LinearOpMode {
         public class OpenClaw implements Action {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
-                claw.turnToAngle(openClawAngle);
+                clawClosed = false;
                 return false;
             }
         }
         public Action openClaw() {
             return new OpenClaw();
+        }
+        public class TightClaw implements Action {
+            @Override
+            public boolean run(@NonNull TelemetryPacket packet) {
+                if (clawClosed) {
+                    claw.turnToAngle(closeClawAngle);
+                } else {
+                    claw.turnToAngle(openClawAngle);
+                }
+                return true;
+            }
+        }
+        public Action tightenClaw() {
+            return new TightClaw();
         }
     }
 

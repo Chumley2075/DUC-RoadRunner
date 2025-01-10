@@ -13,7 +13,6 @@ import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
 import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
-import com.acmerobotics.roadrunner.TurnConstraints;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.arcrobotics.ftclib.hardware.ServoEx;
@@ -26,11 +25,10 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
 
 @Config
-@Autonomous(name = "OTHER_TEST_AUTO", group = "Autonomous")
-public class autotest2 extends LinearOpMode {
+@Autonomous(name = "1BLUE_FRONTSTAGE_MAX", group = "Autonomous")
+public class BLUE_FRONTSTAGE_MAX extends LinearOpMode {
 
     int armTickPosition = 0;
-    public static double toTurnTo = 180;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -39,14 +37,39 @@ public class autotest2 extends LinearOpMode {
         Claw claw = new Claw(hardwareMap);
         Arm arm = new Arm(hardwareMap);
 
+        Vector2d highRung = new Vector2d(-10, 28);
 
-        Vector2d highRung = new Vector2d(-10, 29);
+        TrajectoryActionBuilder strafeToHighRung = drive.actionBuilder(initialPose)
+                .strafeToLinearHeading(highRung, Math.toRadians(90));
 
-        TrajectoryActionBuilder turn = drive.actionBuilder(initialPose)
-                .waitSeconds(6)
-//                .turn(Math.toRadians(toTurnTo))
-                .strafeTo(new Vector2d(-20, 64))
-                .waitSeconds(5);
+        TrajectoryActionBuilder givePlayerFirstSample = drive.actionBuilder(new Pose2d(-10, 30, Math.toRadians(90)))
+                .strafeTo(new Vector2d(-56, 33))
+                .strafeToLinearHeading(new Vector2d(-56, 13), Math.toRadians(270))
+                .strafeTo(new Vector2d(-69, 10))
+                .strafeTo(new Vector2d(-69, 50))
+                .strafeTo(new Vector2d(-73, 10))
+                .strafeTo(new Vector2d(-82, 10))
+                .strafeTo(new Vector2d(-82, 50))
+                .strafeTo(new Vector2d(-82, 40));
+
+        TrajectoryActionBuilder getFirstSpecimen = drive.actionBuilder(new Pose2d(-82, 40, Math.toRadians(270)))
+                .strafeTo(new Vector2d(-65, 40))
+                .strafeTo(new Vector2d(-65, 60));
+
+        TrajectoryActionBuilder hangFirstSpecimen = drive.actionBuilder(new Pose2d(-72, 60, Math.toRadians(270)))
+                        .strafeToLinearHeading(new Vector2d(-15, 40), Math.toRadians(100))
+                        .strafeTo(new Vector2d(-15, 20));
+
+        TrajectoryActionBuilder goPark = drive.actionBuilder(new Pose2d(-15, 20, Math.toRadians(90)))
+                .strafeToLinearHeading(new Vector2d(-73, 50), Math.toRadians(270));
+
+        TrajectoryActionBuilder getSecondSpecimen = drive.actionBuilder(new Pose2d(-15, 20, Math.toRadians(90)))
+                .strafeToLinearHeading(new Vector2d(-73, 40), Math.toRadians(270))
+                .strafeTo(new Vector2d(-73, 60));
+
+        TrajectoryActionBuilder hangSecondSpecimen = drive.actionBuilder(new Pose2d(-73, 60, Math.toRadians(270)))
+                .strafeToLinearHeading(new Vector2d(-5, 40), Math.toRadians(100))
+                .strafeTo(new Vector2d(-5, 20));
 
 
 
@@ -58,7 +81,39 @@ public class autotest2 extends LinearOpMode {
         Actions.runBlocking(
                 new ParallelAction(
                         new SequentialAction(
-                                turn.build()
+                                new ParallelAction(
+                                    strafeToHighRung.build(),
+                                    arm.highRung()
+                                ),
+                                arm.highRung2(),
+                                new SleepAction(0.25),
+                                claw.openClaw(),
+                                new SleepAction(0.25),
+                                givePlayerFirstSample.build(),
+                                new ParallelAction(
+                                        arm.low(),
+                                        getFirstSpecimen.build()
+                                ),
+                                claw.closeClaw(),
+                                new ParallelAction(
+                                        arm.highRung(),
+                                        hangFirstSpecimen.build()
+                                ),
+                                arm.highRung2(),
+                                new SleepAction(0.25),
+                                claw.openClaw(),
+                                new ParallelAction(
+                                        arm.low(),
+                                        goPark.build()
+                                ),
+                                claw.closeClaw()
+                                /*new ParallelAction( I HATE OPTIMIZING FOR TIME!!!!!!!! GIVE ME DEAD ENCODERS NOW!!!!
+                                        arm.highRung(),
+                                        hangSecondSpecimen.build()
+                                ),
+                                arm.highRung2(),
+                                new SleepAction(0.25),
+                                claw.openClaw()*/
                         ),
                         arm.keepPosition()
                 )

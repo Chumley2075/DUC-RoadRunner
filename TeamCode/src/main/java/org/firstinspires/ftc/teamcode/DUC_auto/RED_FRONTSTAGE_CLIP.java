@@ -28,7 +28,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
 
 @Config
-@Autonomous(name = "RED_FRONTSTAGE_CLIP", group = "Autonomous")
+@Autonomous(name = "2RED_FRONTSTAGE_CLIP", group = "Autonomous")
 public class RED_FRONTSTAGE_CLIP extends LinearOpMode {
 
     int armTickPosition = 250;
