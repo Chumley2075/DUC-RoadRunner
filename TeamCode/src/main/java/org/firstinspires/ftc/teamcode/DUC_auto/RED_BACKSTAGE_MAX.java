@@ -53,10 +53,10 @@ public class RED_BACKSTAGE_MAX extends LinearOpMode {
                 .strafeTo(new Vector2d(82, -40));
 
         TrajectoryActionBuilder getFirstSpecimen = drive.actionBuilder(new Pose2d(82, -40, Math.toRadians(90)))
-                .strafeTo(new Vector2d(65, 40))
-                .strafeTo(new Vector2d(65, 60));
+                .strafeTo(new Vector2d(65, -40))
+                .strafeTo(new Vector2d(65, -60));
 
-        TrajectoryActionBuilder hangFirstSpecimen = drive.actionBuilder(new Pose2d(-72, 60, Math.toRadians(90)))
+        TrajectoryActionBuilder hangFirstSpecimen = drive.actionBuilder(new Pose2d(72, -60, Math.toRadians(90)))
                 .strafeToLinearHeading(new Vector2d(15, -40), Math.toRadians(270))
                 .strafeTo(new Vector2d(15, -20));
 

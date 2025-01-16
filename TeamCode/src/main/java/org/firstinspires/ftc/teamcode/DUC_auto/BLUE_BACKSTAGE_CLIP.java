@@ -44,15 +44,16 @@ public class BLUE_BACKSTAGE_CLIP extends LinearOpMode {
         Arm arm = new Arm(hardwareMap);
 
         Vector2d ascentArea = new Vector2d(-10, 15);
-        Vector2d highRung = new Vector2d(-10, 28);
+        Vector2d highRung = new Vector2d(5, 28);
 
         TrajectoryActionBuilder strafeToHighRung = drive.actionBuilder(initialPose)
                 .strafeToLinearHeading(highRung, Math.toRadians(90));
 
-        TrajectoryActionBuilder parkTier1Ascent = drive.actionBuilder(new Pose2d(-10, 28, Math.toRadians(90)))
-                .strafeTo(new Vector2d(37, 40))
-                .strafeTo(new Vector2d(37, 15))
-                .strafeToLinearHeading(ascentArea, Math.toRadians(180));
+        TrajectoryActionBuilder parkTier1Ascent = drive.actionBuilder(new Pose2d(-10, 28, Math.toRadians(270)))
+                .strafeTo(new Vector2d(40, 35))
+                .strafeTo(new Vector2d(40, 8))
+                .turnTo(Math.toRadians(0.1))
+                .strafeTo(new Vector2d(23, 8));
 
 
 

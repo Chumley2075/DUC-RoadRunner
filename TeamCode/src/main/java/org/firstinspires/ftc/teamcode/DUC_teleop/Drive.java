@@ -119,7 +119,10 @@ public class Drive extends LinearOpMode {
 
             robot.robotOrientation = robot.imu.getRobotYawPitchRollAngles();
             if (gamepad1.left_bumper) {robot.imu.resetYaw();}
-            if (gamepad1.right_bumper) {robot.specimenArm.resetEncoder();}
+            if (gamepad1.right_bumper) {
+                robot.specimenArm.resetEncoder();
+                specimenTargetPosition = 0;
+            }
             mecanum.driveFieldCentric(
                     controller1.getLeftX() * precisionCoefficient,
                     controller1.getLeftY() * precisionCoefficient,
@@ -189,8 +192,10 @@ public class Drive extends LinearOpMode {
             rightStickYValue = Math.cbrt(-gamepad2.right_stick_y);
             if(rightStickYValue>0 || rightStickYValue<0){
                 if (timerArmRotate.milliseconds() >= intervalMS) {
-                    armTickPosition += (int) ((int) rightStickYValue * (100 * precisionCoefficient2));
-                    timerArmRotate.reset();
+                    if (!(rightStickYValue > 0 && armTickPosition > 3010)) {
+                        armTickPosition += (int) ((int) rightStickYValue * (100 * precisionCoefficient2));
+                        timerArmRotate.reset();
+                    }
                 }
             } else if (gamepad2.a) {
                 armTickPosition= 50;
